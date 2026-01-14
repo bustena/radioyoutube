@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>YouTube Audio UI (tapando vídeo)</title>
+  <title>Player (Google Sheets presets)</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="shell">
     <header class="header">
-      <h1>YouTube Audio UI</h1>
-      <p class="sub">Pega una URL de YouTube y controla reproducción/volumen con botones.</p>
+      <h1>Reproductor</h1>
+      <p class="sub">Presets desde Google Sheets + controles estándar.</p>
     </header>
 
     <section class="card">
-      <form id="loadForm" class="row" autocomplete="off">
-        <label class="label" for="ytUrl">URL o ID</label>
-        <input id="ytUrl" class="input" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
-        <button class="btn primary" type="submit">Cargar</button>
-      </form>
+      <!-- Tabs dinámicos -->
+      <div class="tabsHeader">
+        <div class="tabsTitle">Selección</div>
+        <div id="tabs" class="tabs" aria-label="Lista de presets"></div>
+      </div>
 
       <div class="playerWrap">
         <!-- Contenedor real del iframe -->
@@ -30,22 +30,22 @@
             <div class="disc"></div>
           </div>
           <div class="meta">
-            <div id="title" class="title">Sin cargar</div>
-            <div id="status" class="status">Pega una URL y pulsa “Cargar”.</div>
+            <div id="title" class="title">Cargando…</div>
+            <div id="status" class="status">Inicializando…</div>
           </div>
         </div>
       </div>
 
       <div class="controls">
-        <button class="btn" id="playBtn" type="button">▶︎</button>
-        <button class="btn" id="pauseBtn" type="button">⏸</button>
-        <button class="btn" id="stopBtn" type="button">⏹</button>
+        <button class="btn" id="playBtn" type="button" title="Play">▶︎</button>
+        <button class="btn" id="pauseBtn" type="button" title="Pause">⏸</button>
+        <button class="btn" id="stopBtn" type="button" title="Stop">⏹</button>
 
         <div class="divider"></div>
 
-        <button class="btn" id="muteBtn" type="button">🔈/🔇</button>
-        <button class="btn" id="volDownBtn" type="button">－</button>
-        <button class="btn" id="volUpBtn" type="button">＋</button>
+        <button class="btn" id="muteBtn" type="button" title="Mute">🔈/🔇</button>
+        <button class="btn" id="volDownBtn" type="button" title="Bajar">－</button>
+        <button class="btn" id="volUpBtn" type="button" title="Subir">＋</button>
 
         <div class="vol">
           <label class="label small" for="volRange">Volumen</label>
@@ -53,8 +53,8 @@
         </div>
       </div>
 
-      <footer class="footnote">
-        Nota: el vídeo está tapado visualmente (overlay), pero sigue siendo un reproductor de YouTube.
+      <footer class="footnote" id="footnote">
+        Cargando presets desde Google Sheets…
       </footer>
     </section>
   </main>
