@@ -227,4 +227,108 @@ async function loadPresets() {
   setStatus("Leyendo Google Sheets…");
   setFoot("Cargando presets desde Google Sheets…");
 
-  const res = await fetch(CSV_URL,_
+  const res = await fetch(CSV_URL, { cache: "no-store" });
+  if (!res.ok) throw new Error("No se pudo descargar el CSV.");
+  const text = await res.text();
+
+  const rows = parseCSV(text);
+
+  // Nos quedamos con 3
+  presets = rows.slice(0, 3);
+
+  if (presets.length === 0) {
+    setTitle("Sin presets");
+    setStatus("El CSV no tiene datos válidos (Etiqueta/Enlace).");
+    setFoot("Revisa el CSV publicado.");
+    return;
+  }
+
+  // Si faltan filas, también lo indicamos
+  if (rows.length !== 3) {
+    setFoot(`Cargados ${presets.length} preset(s) (de ${rows.length} fila(s) en la hoja).`);
+  } else {
+    setFoot("Presets cargados. Elige uno.");
+  }
+
+  // Default: seleccionar el primero (sin autoplay)
+  activeIndex = 0;
+  renderTabs();
+  selectPreset(0, false);
+}
+
+// YouTube llama a esta función global cuando la API está lista
+window.onYouTubeIframeAPIReady = () => {
+  apiReady = true;
+  // Si ya tenemos presets, dejamos listo; si no, el flujo normal seguirá
+};
+
+function wireControls() {
+  els.play.addEventListener("click", () => { if (player) player.playVideo(); });
+  els.pause.addEventListener("click", () => { if (player) player.pauseVideo(); });
+  els.stop.addEventListener("click", () => {
+    if (!player) return;
+    player.stopVideo();
+    setStatus("Detenido");
+  });
+
+  els.mute.addEventListener("click", () => {
+    if (!player) return;
+    if (player.isMuted()) {
+      player.unMute();
+      setStatus("Sonando");
+    } else {
+      player.mute();
+      setStatus("Silenciado");
+    }
+  });
+
+  els.volDown.addEventListener("click", () => {
+    if (!player) return;
+    setVolume(player.getVolume() - 5);
+  });
+
+  els.volUp.addEventListener("click", () => {
+    if (!player) return;
+    setVolume(player.getVolume() + 5);
+  });
+
+  els.volRange.addEventListener("input", (e) => {
+    setVolume(Number(e.target.value));
+  });
+}
+
+async function start() {
+  wireControls();
+
+  setTitle("Cargando…");
+  setStatus("Inicializando…");
+
+  try {
+    await loadPresets();
+
+    // Espera a que la API esté lista (sin prometer tiempos: simple polling)
+    const t0 = Date.now();
+    while (!apiReady) {
+      // pequeño yield
+      await new Promise(r => setTimeout(r, 30));
+      // (si algo va mal, no bloqueamos infinito)
+      if (Date.now() - t0 > 8000) break;
+    }
+
+    if (!apiReady) {
+      setStatus("API de YouTube no disponible (bloqueo/red).");
+      return;
+    }
+
+    // si ya hay preset activo, nos aseguramos de tener player (cue)
+    if (activeIndex >= 0 && presets[activeIndex]?.videoId) {
+      ensurePlayerWithFirstVideo(presets[activeIndex].videoId);
+    }
+  } catch (err) {
+    setTitle("Error");
+    setStatus("No pude cargar el CSV. Revisa el enlace publicado.");
+    setFoot(String(err?.message || err));
+  }
+}
+
+start();
